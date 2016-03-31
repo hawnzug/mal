@@ -1,5 +1,5 @@
 pub enum MalType {
     Int(i32),
     Symbol(String),
-    List,
+    List(Vec<MalType>),
 }

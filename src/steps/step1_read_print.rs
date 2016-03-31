@@ -1,9 +1,9 @@
 use types::MalType;
-use reader::read_form;
+use reader::read_str;
 use printer::pr_str;
 
 pub fn read(s: &str) -> MalType {
-    read_form(s)
+    read_str(s)
 }
 
 pub fn eval(m: MalType) -> MalType {
