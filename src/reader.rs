@@ -6,24 +6,38 @@ use std::str::from_utf8;
 use types::MalType;
 
 pub fn read_str(s: &str) -> MalType {
-    parse_only(parse_int, s.as_bytes()).unwrap()
+    match parse_only(parse_all, s.as_bytes()) {
+        Ok(e@MalType::Error(_)) => e,
+        Ok(m) => m,
+        _ => MalType::Error("Syntax Error".to_string()),
+    }
 }
 
 fn parse_int(i: Input<u8>) -> U8Result<MalType> {
     parse!{i;
-        let t = take_while1(|c| c >= b'0' && c <= b'9');
-        ret to_malint(t)
+        let first = satisfy(|c| c == b'+' || c == b'-' || is_digit(c));
+        let later = take_while1(is_digit);
+        ret to_malint(from_utf8(&[first]).unwrap().to_string()+
+                      from_utf8(later).unwrap())
     }
 }
 
 fn parse_atom(i: Input<u8>) -> U8Result<MalType> {
     parse!{i;
-        let first = satisfy(|c| is_symbol(c) || ascii::is_alpha(c));
-        let later = take_while1(|c| is_symbol(c)
+        let first = satisfy(|c| is_symbol(c) || is_alpha(c));
+        let later = take_while(|c| is_symbol(c)
                                 || is_alpha(c)
                                 || is_digit(c));
-        ret MalType::Symbol(from_utf8(&[first]).unwrap().to_string()+
-                            from_utf8(later).unwrap())
+        ret {
+            let result = from_utf8(&[first]).unwrap().to_string()+
+                     from_utf8(later).unwrap();
+            match result.as_str() {
+                "true" => MalType::True,
+                "false" => MalType::False,
+                "nil" => MalType::Nil,
+                _ => MalType::Symbol(result),
+            }
+        }
     }
 }
 
@@ -38,8 +52,8 @@ fn parse_list(i: Input<u8>) -> U8Result<MalType> {
 
 fn parse_all(i: Input<u8>) -> U8Result<MalType> {
     let r = parser!{
-        parse_atom() <|>
         parse_int() <|>
+        parse_atom() <|>
         parse_list()
     };
     parse!{i;
@@ -50,21 +64,18 @@ fn parse_all(i: Input<u8>) -> U8Result<MalType> {
     }
 }
 
-fn to_malint(c: &[u8]) -> MalType {
-    let i = from_utf8(c).unwrap();
-    let j: i32 = i.to_string().parse().unwrap();
-    MalType::Int(j)
+fn to_malint(c: String) -> MalType {
+    match c.parse::<i32>() {
+        Ok(x) => MalType::Int(x),
+        _ => MalType::Error("Number overflow".to_string()),
+    }
 }
 
 fn is_symbol(c: u8) -> bool {
     match c {
         33 => true,
         35...38 => true,
-        42 => true,
-        43 => true,
-        45 => true,
-        47 => true,
-        58 => true,
+        42 | 43 | 45 | 47 | 48 | 58 => true,
         60...64 => true,
         94...95 => true,
         124 => true,
@@ -116,7 +127,7 @@ fn test_parse_atom() {
 #[test]
 fn test_to_malint() {
     let v = [b'1', b'2'];
-    let i = match to_malint(&v) {
+    let i = match to_malint(from_utf8(&v).unwrap().to_string()) {
         MalType::Int(x) => x,
         _ => 0,
     };

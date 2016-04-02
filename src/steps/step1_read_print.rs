@@ -11,7 +11,7 @@ pub fn eval(m: MalType) -> MalType {
 }
 
 pub fn print(m: MalType) -> String {
-    pr_str(m)
+    pr_str(&m)
 }
 
 pub fn rep(s: &str) -> String {
