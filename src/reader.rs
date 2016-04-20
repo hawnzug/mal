@@ -13,12 +13,26 @@ pub fn read_str(s: &str) -> MalType {
     }
 }
 
-fn parse_int(i: Input<u8>) -> U8Result<MalType> {
+fn parse_signed_int(i: Input<u8>) -> U8Result<MalType> {
     parse!{i;
-        let first = satisfy(|c| c == b'+' || c == b'-' || is_digit(c));
+        let first = satisfy(|c| c == b'+' || c == b'-');
         let later = take_while1(is_digit);
         ret to_malint(from_utf8(&[first]).unwrap().to_string()+
                       from_utf8(later).unwrap())
+    }
+}
+
+fn parse_unsigned_int(i: Input<u8>) -> U8Result<MalType> {
+    parse!{i;
+        let later = take_while1(is_digit);
+        ret to_malint(from_utf8(later).unwrap().to_string())
+    }
+}
+
+fn parse_int(i: Input<u8>) -> U8Result<MalType> {
+    parse!{i;
+        let t = parse_signed_int() <|> parse_unsigned_int();
+        ret t
     }
 }
 
@@ -41,6 +55,15 @@ fn parse_atom(i: Input<u8>) -> U8Result<MalType> {
     }
 }
 
+fn parse_string(i: Input<u8>) -> U8Result<MalType> {
+    parse!{i;
+        token(b'"');
+        let s = take_while(|c| c != b'"');
+        token(b'"');
+        ret MalType::String(from_utf8(s).unwrap().to_string())
+    }
+}
+
 fn parse_list(i: Input<u8>) -> U8Result<MalType> {
     parse!{i;
         token(b'(');
@@ -54,6 +77,7 @@ fn parse_all(i: Input<u8>) -> U8Result<MalType> {
     let r = parser!{
         parse_int() <|>
         parse_atom() <|>
+        parse_string() <|>
         parse_list()
     };
     parse!{i;

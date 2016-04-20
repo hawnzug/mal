@@ -16,11 +16,12 @@ pub fn pr_str(m: &MalType) -> String {
         }
         &MalType::Int(x) => x.to_string(),
         &MalType::Symbol(ref s) => s.to_string(),
+        &MalType::String(ref s) => "\"".to_string() + s + "\"",
         &MalType::Error(ref e) => e.to_string(),
         &MalType::True => "#t".to_string(),
         &MalType::False => "#f".to_string(),
         &MalType::Nil => "nil".to_string(),
-        // _ => "Todo".to_string(),
+        _ => "Todo".to_string(),
     }
 }
 
