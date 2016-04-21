@@ -5,10 +5,11 @@ pub mod steps;
 pub mod reader;
 pub mod types;
 pub mod printer;
+pub mod env;
 
 use std::io;
 use std::io::prelude::*;
-use std::collections::HashMap;
+use env::Env;
 use types::MalType;
 
 fn main() {
@@ -21,7 +22,7 @@ fn main() {
             Ok(0) => break,
             Ok(_) => {
                 // let s = steps::step0_repl::rep(&input);
-                let s = steps::step2_eval::rep(&input, &mut repl_env);
+                let s = steps::step3_env::rep(&input, &mut repl_env);
                 println!("{}", s);
             }
             Err(error) => println!("{}", error),
@@ -49,8 +50,8 @@ fn add(v: Vec<MalType>) -> MalType {
     }
 }
 
-fn init_env() -> HashMap<String, MalType> {
-    let mut repl_env = HashMap::new();
-    repl_env.insert("+".to_string(), MalType::Func(add));
+fn init_env() -> Env {
+    let mut repl_env = Env::new();
+    repl_env.set("+".to_string(), MalType::Func(add));
     repl_env
 }
