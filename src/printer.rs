@@ -21,6 +21,7 @@ pub fn pr_str(m: &MalType) -> String {
         MalType::True => "#t".to_string(),
         MalType::False => "#f".to_string(),
         MalType::Nil => "nil".to_string(),
+        MalType::MalFunc(_, _, _) => "#function".to_string(),
         _ => "Todo".to_string(),
     }
 }

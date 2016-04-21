@@ -1,3 +1,5 @@
+use env::Env;
+
 #[derive(Clone)]
 pub enum MalType {
     True,
@@ -8,5 +10,6 @@ pub enum MalType {
     String(String),
     List(Vec<MalType>),
     Func(fn(Vec<MalType>) -> MalType),
+    MalFunc(Box<MalType>, Box<MalType>, Env),
     Error(String),
 }

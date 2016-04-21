@@ -35,6 +35,15 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                         } else {
                             MalType::Error("define need two parameters".to_string())
                         }
+                    } else if s == "lambda" {
+                        if v.len() == 3 {
+                            MalType::MalFunc(Box::new(v[1].clone()),
+                                             Box::new(v[2].clone()),
+                                             env.clone())
+                            // MalType::Error("todo: labmda".to_string())
+                        } else {
+                            MalType::Error("lambda need two parameters".to_string())
+                        }
                     } else {
                         let mut para = Vec::new();
                         for i in v {
@@ -44,7 +53,12 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                         apply(head, para)
                     }
                 } else {
-                    MalType::Error("cannot found".to_string())
+                    let mut para = Vec::new();
+                    for i in v {
+                        para.push(eval(i, env));
+                    }
+                    let head = para.remove(0);
+                    apply(head, para)
                 }
             }
         }
@@ -61,6 +75,14 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
 fn apply(func: MalType, para: Vec<MalType>) -> MalType {
     match func {
         MalType::Func(f) => f(para),
+        MalType::MalFunc(formals, body, env) => {
+            let newenv = env.extend(*formals, para);
+            if let Some(mut newnew) = newenv {
+                eval(*body, &mut newnew)
+            } else {
+                MalType::Error("environment wrong".to_string())
+            }
+        }
         _ => MalType::Error("The head should be function".to_string()),
     }
 }
