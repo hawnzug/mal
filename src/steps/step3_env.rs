@@ -21,12 +21,31 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
             if v.is_empty() {
                 MalType::List(vec![])
             } else {
-                let mut para = Vec::new();
-                for i in v {
-                    para.push(eval(i, env));
+                if let MalType::Symbol(ref s) = v[0].clone() {
+                    if s == "define" {
+                        if v.len() == 3 {
+                            if let MalType::Symbol(ref s) = v[1].clone() {
+                                let second = eval(v[2].clone(), env);
+                                env.set(s.to_string(), second);
+                                MalType::Nil
+                            } else {
+                                MalType::Error("define: first parameter should be a symbol"
+                                                   .to_string())
+                            }
+                        } else {
+                            MalType::Error("define need two parameters".to_string())
+                        }
+                    } else {
+                        let mut para = Vec::new();
+                        for i in v {
+                            para.push(eval(i, env));
+                        }
+                        let head = para.remove(0);
+                        apply(head, para)
+                    }
+                } else {
+                    MalType::Error("cannot found".to_string())
                 }
-                let head = para.remove(0);
-                apply(head, para)
             }
         }
         MalType::Symbol(s) => {
