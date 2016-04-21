@@ -15,23 +15,28 @@ impl Env {
         }
     }
 
-    pub fn extend(self, formals: MalType, args: Vec<MalType>) -> Option<Env> {
+    pub fn extend(self, formals: MalType, args: Vec<MalType>) -> Result<Env, MalType> {
         let mut newenv = Env {
             data: HashMap::new(),
             outer: Some(Box::new(self)),
         };
         let len = args.len();
         if let MalType::List(form) = formals {
-            for i in 0..len {
-                if let MalType::Symbol(ref s) = form[i] {
-                    newenv.set(s.clone(), args[i].clone());
-                } else {
-                    return None;
+            if form.len() == len {
+                for i in 0..len {
+                    if let MalType::Symbol(ref s) = form[i] {
+                        newenv.set(s.clone(), args[i].clone());
+                    } else {
+                        return Err(MalType::Error("lambda: expect symbols in first parameter"
+                                                      .to_string()));
+                    }
                 }
+                Ok(newenv)
+            } else {
+                Err(MalType::Error("too many arguments applied".to_string()))
             }
-            Some(newenv)
         } else {
-            None
+            Err(MalType::Error("lambda: first parameter should be a list".to_string()))
         }
     }
 

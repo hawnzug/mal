@@ -77,10 +77,9 @@ fn apply(func: MalType, para: Vec<MalType>) -> MalType {
         MalType::Func(f) => f(para),
         MalType::MalFunc(formals, body, env) => {
             let newenv = env.extend(*formals, para);
-            if let Some(mut newnew) = newenv {
-                eval(*body, &mut newnew)
-            } else {
-                MalType::Error("environment wrong".to_string())
+            match newenv {
+                Ok(mut newnew) => eval(*body, &mut newnew),
+                Err(err) => err,
             }
         }
         _ => MalType::Error("The head should be function".to_string()),
