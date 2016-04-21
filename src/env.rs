@@ -33,7 +33,7 @@ impl Env {
                 }
                 Ok(newenv)
             } else {
-                Err(MalType::Error("too many arguments applied".to_string()))
+                Err(MalType::Error("wrong argument number".to_string()))
             }
         } else {
             Err(MalType::Error("lambda: first parameter should be a list".to_string()))

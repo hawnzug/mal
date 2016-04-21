@@ -40,9 +40,18 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                             MalType::MalFunc(Box::new(v[1].clone()),
                                              Box::new(v[2].clone()),
                                              env.clone())
-                            // MalType::Error("todo: labmda".to_string())
                         } else {
                             MalType::Error("lambda need two parameters".to_string())
+                        }
+                    } else if s == "if" {
+                        if v.len() == 4 {
+                            match eval(v[1].clone(), env) {
+                                MalType::False | MalType::Nil => eval(v[3].clone(), env),
+                                err@MalType::Error(_) => err,
+                                _ => eval(v[2].clone(), env),
+                            }
+                        } else {
+                            MalType::Error("if: needs 3 parameters".to_string())
                         }
                     } else {
                         let mut para = Vec::new();
