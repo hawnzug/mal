@@ -53,6 +53,8 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                         } else {
                             MalType::Error("if: needs 3 parameters".to_string())
                         }
+                    } else if s == "quote" {
+                        v[1].clone()
                     } else {
                         let mut para = Vec::new();
                         for i in v {

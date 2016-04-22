@@ -46,8 +46,8 @@ fn parse_atom(i: Input<u8>) -> U8Result<MalType> {
             let result = from_utf8(&[first]).unwrap().to_string()+
                      from_utf8(later).unwrap();
             match result.as_str() {
-                "true" => MalType::True,
-                "false" => MalType::False,
+                "true"|"#t" => MalType::True,
+                "false"|"#f" => MalType::False,
                 "nil" => MalType::Nil,
                 _ => MalType::Symbol(result),
             }
@@ -73,11 +73,20 @@ fn parse_list(i: Input<u8>) -> U8Result<MalType> {
     }
 }
 
+fn parse_quote(i: Input<u8>) -> U8Result<MalType> {
+    parse!{i;
+        token(b'\'');
+        let t = parse_all();
+        ret MalType::List(vec![MalType::Symbol("quote".to_string()), t])
+    }
+}
+
 fn parse_all(i: Input<u8>) -> U8Result<MalType> {
     let r = parser!{
         parse_int() <|>
         parse_atom() <|>
         parse_string() <|>
+        parse_quote() <|>
         parse_list()
     };
     parse!{i;
