@@ -27,10 +27,10 @@ fn add1(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("add1 need 1 parameter".to_string())
     } else {
-        if let MalType::Int(x) = v[0] {
-            MalType::Int(x + 1)
-        } else {
-            MalType::Error("add1 should receive int".to_string())
+        match v[0] {
+            MalType::Int(x) => MalType::Int(x + 1),
+            ref err@MalType::Error(_) => err.clone(),
+            _ => MalType::Error("add1 should receive int".to_string()),
         }
     }
 }

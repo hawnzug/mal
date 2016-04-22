@@ -61,7 +61,7 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                             para.push(eval(i, env));
                         }
                         let head = para.remove(0);
-                        apply(head, para)
+                        apply(head, para, env)
                     }
                 } else {
                     let mut para = Vec::new();
@@ -69,7 +69,7 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                         para.push(eval(i, env));
                     }
                     let head = para.remove(0);
-                    apply(head, para)
+                    apply(head, para, env)
                 }
             }
         }
@@ -83,11 +83,12 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
     }
 }
 
-fn apply(func: MalType, para: Vec<MalType>) -> MalType {
+fn apply(func: MalType, para: Vec<MalType>, mut env: &mut Env) -> MalType {
     match func {
         MalType::Func(f) => f(para),
-        MalType::MalFunc(formals, body, env) => {
-            let newenv = env.extend(*formals, para);
+        MalType::MalFunc(formals, body, mut oldenv) => {
+            oldenv.extend(&mut env);
+            let newenv = oldenv.multibind(*formals, para);
             match newenv {
                 Ok(mut newnew) => eval(*body, &mut newnew),
                 Err(err) => err,

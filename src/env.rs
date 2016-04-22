@@ -15,7 +15,15 @@ impl Env {
         }
     }
 
-    pub fn extend(self, formals: MalType, args: Vec<MalType>) -> Result<Env, MalType> {
+    pub fn extend(&mut self, env: &Env) {
+        if let Some(ref mut b) = self.outer {
+            (*b).extend(&env);
+        } else {
+            self.outer = Some(Box::new(env.clone()));
+        }
+    }
+
+    pub fn multibind(self, formals: MalType, args: Vec<MalType>) -> Result<Env, MalType> {
         let mut newenv = Env {
             data: HashMap::new(),
             outer: Some(Box::new(self)),
