@@ -7,9 +7,12 @@ fn add(v: Vec<MalType>) -> MalType {
     }
     let mut sum: i32 = 0;
     let mut err = false;
-    for i in &v {
+    for i in v {
         match i {
-            &MalType::Int(x) => sum += x,
+            MalType::Int(x) => sum += x,
+            err@MalType::Error(_) => {
+                return err;
+            }
             _ => {
                 err = true;
                 break;
@@ -39,14 +42,16 @@ fn is_null(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("null? need 1 parameter".to_string())
     } else {
-        if let MalType::List(ref lst) = v[0] {
-            if lst.is_empty() {
-                MalType::True
-            } else {
-                MalType::False
+        match v[0] {
+            MalType::List(ref lst) => {
+                if lst.is_empty() {
+                    MalType::True
+                } else {
+                    MalType::False
+                }
             }
-        } else {
-            MalType::Error("null? should receive list".to_string())
+            ref err@MalType::Error(_) => err.clone(),
+            _ => MalType::Error("null? should receive list".to_string()),
         }
     }
 }

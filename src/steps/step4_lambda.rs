@@ -12,12 +12,12 @@ pub fn print(m: MalType) -> String {
 }
 
 pub fn rep(s: &str, mut env: &mut Env) -> String {
-    print(eval(read(s), &mut env))
+    print(eval(&read(s), &mut env))
 }
 
-pub fn eval(ast: MalType, env: &mut Env) -> MalType {
-    match ast {
-        MalType::List(v) => {
+pub fn eval(ast: &MalType, env: &mut Env) -> MalType {
+    match *ast {
+        MalType::List(ref v) => {
             if v.is_empty() {
                 MalType::List(vec![])
             } else {
@@ -25,7 +25,7 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                     if s == "define" {
                         if v.len() == 3 {
                             if let MalType::Symbol(ref sym) = v[1].clone() {
-                                let second = eval(v[2].clone(), env);
+                                let second = eval(&v[2], env);
                                 env.set(sym.to_string(), second);
                                 MalType::Nil
                             } else {
@@ -45,10 +45,10 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                         }
                     } else if s == "if" {
                         if v.len() == 4 {
-                            match eval(v[1].clone(), env) {
-                                MalType::False | MalType::Nil => eval(v[3].clone(), env),
+                            match eval(&v[1], env) {
+                                MalType::False | MalType::Nil => eval(&v[3], env),
                                 err@MalType::Error(_) => err,
-                                _ => eval(v[2].clone(), env),
+                                _ => eval(&v[2], env),
                             }
                         } else {
                             MalType::Error("if: needs 3 parameters".to_string())
@@ -58,39 +58,40 @@ pub fn eval(ast: MalType, env: &mut Env) -> MalType {
                     } else {
                         let mut para = Vec::new();
                         for i in v {
-                            para.push(eval(i, env));
+                            para.push(eval(&i, env));
                         }
                         let head = para.remove(0);
-                        apply(head, para, env)
+                        apply(&head, para, env)
                     }
                 } else {
                     let mut para = Vec::new();
                     for i in v {
-                        para.push(eval(i, env));
+                        para.push(eval(&i, env));
                     }
                     let head = para.remove(0);
-                    apply(head, para, env)
+                    apply(&head, para, env)
                 }
             }
         }
-        MalType::Symbol(s) => {
+        MalType::Symbol(ref s) => {
             match env.find(&s) {
                 Some(t) => t,
                 None => MalType::Error("cannot found".to_string()),
             }
         }
-        _ => ast,
+        _ => ast.clone(),
     }
 }
 
-fn apply(func: MalType, para: Vec<MalType>, mut env: &mut Env) -> MalType {
-    match func {
+fn apply(func: &MalType, para: Vec<MalType>, mut env: &mut Env) -> MalType {
+    match *func {
         MalType::Func(f) => f(para),
-        MalType::MalFunc(formals, body, mut oldenv) => {
-            oldenv.extend(&mut env);
-            let newenv = oldenv.multibind(*formals, para);
+        MalType::MalFunc(ref formals, ref body, ref oldenv) => {
+            let mut old = oldenv.clone();
+            old.extend(&mut env);
+            let newenv = old.multibind(*formals.clone(), para);
             match newenv {
-                Ok(mut newnew) => eval(*body, &mut newnew),
+                Ok(mut newnew) => eval(&**body, &mut newnew),
                 Err(err) => err,
             }
         }
