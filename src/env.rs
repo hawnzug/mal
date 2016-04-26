@@ -16,11 +16,11 @@ impl Env {
     }
 
     #[inline]
-    pub fn extend(&mut self, env: &Env) {
+    pub fn extend(&mut self, env: Env) {
         if let Some(ref mut b) = self.outer {
-            (*b).extend(&env);
+            (*b).extend(env);
         } else {
-            self.outer = Some(Box::new(env.clone()));
+            self.outer = Some(Box::new(env));
         }
     }
 
