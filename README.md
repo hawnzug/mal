@@ -8,6 +8,7 @@ of learning Rust, or maybe understanding Lisp better.
 
 # Todo List
 
-- [x] lambda
 - [ ] Big Number
-- [ ] Tail Call Optimization
+- [x] lambda
+- [x] Tail Call Optimization
+- [ ] Macro
