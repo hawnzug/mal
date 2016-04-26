@@ -15,6 +15,7 @@ impl Env {
         }
     }
 
+    #[inline]
     pub fn extend(&mut self, env: &Env) {
         if let Some(ref mut b) = self.outer {
             (*b).extend(&env);
@@ -23,6 +24,7 @@ impl Env {
         }
     }
 
+    #[inline]
     pub fn multibind(self, formals: MalType, args: Vec<MalType>) -> Result<Env, MalType> {
         let mut newenv = Env {
             data: HashMap::new(),
@@ -33,7 +35,7 @@ impl Env {
             if form.len() == len {
                 for i in 0..len {
                     if let MalType::Symbol(ref s) = form[i] {
-                        newenv.set(s.clone(), args[i].clone());
+                        newenv.data.insert(s.clone(), args[i].clone());
                     } else {
                         return Err(MalType::Error("lambda: expect symbols in first parameter"
                                                       .to_string()));
@@ -48,10 +50,25 @@ impl Env {
         }
     }
 
+    #[inline]
     pub fn set(&mut self, symbol: String, m: MalType) {
         self.data.insert(symbol, m);
     }
 
+    #[inline]
+    pub fn delete(&mut self, symbol: &str) {
+        match self.data.remove(symbol) {
+            None => {
+                match self.outer {
+                    Some(ref mut e) => e.delete(symbol),
+                    None => return,
+                }
+            }
+            _ => return,
+        }
+    }
+
+    #[inline]
     pub fn find(&self, symbol: &str) -> Option<MalType> {
         if let Some(m) = self.data.get(symbol) {
             return Some(m.clone());

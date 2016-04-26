@@ -1,6 +1,7 @@
 use env::Env;
 use types::MalType;
 
+#[inline]
 fn add(v: Vec<MalType>) -> MalType {
     if v.len() < 2 {
         return MalType::Error("add need 2 parameter".to_string());
@@ -26,6 +27,7 @@ fn add(v: Vec<MalType>) -> MalType {
     }
 }
 
+#[inline]
 fn add1(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("add1 need 1 parameter".to_string())
@@ -38,6 +40,7 @@ fn add1(v: Vec<MalType>) -> MalType {
     }
 }
 
+#[inline]
 fn is_null(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("null? need 1 parameter".to_string())
@@ -56,6 +59,7 @@ fn is_null(v: Vec<MalType>) -> MalType {
     }
 }
 
+#[inline]
 fn car(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("car only needs 1 parameter".to_string())
@@ -72,6 +76,7 @@ fn car(v: Vec<MalType>) -> MalType {
     }
 }
 
+#[inline]
 fn cdr(v: Vec<MalType>) -> MalType {
     if v.len() != 1 {
         MalType::Error("cdr only needs 1 parameter".to_string())
@@ -90,6 +95,27 @@ fn cdr(v: Vec<MalType>) -> MalType {
     }
 }
 
+#[inline]
+fn equal(v: Vec<MalType>) -> MalType {
+    if v.len() > 2 {
+        MalType::Error("= only needs 2 parameter".to_string())
+    } else {
+        if let MalType::Int(a) = v[0] {
+            if let MalType::Int(b) = v[1] {
+                if a == b {
+                    MalType::True
+                } else {
+                    MalType::False
+                }
+            } else {
+                MalType::Error("= should receive int".to_string())
+            }
+        } else {
+            MalType::Error("= should receive int".to_string())
+        }
+    }
+}
+
 pub fn init_env() -> Env {
     let mut repl_env = Env::new();
     repl_env.set("+".to_string(), MalType::Func(add));
@@ -97,5 +123,6 @@ pub fn init_env() -> Env {
     repl_env.set("null?".to_string(), MalType::Func(is_null));
     repl_env.set("car".to_string(), MalType::Func(car));
     repl_env.set("cdr".to_string(), MalType::Func(cdr));
+    repl_env.set("=".to_string(), MalType::Func(equal));
     repl_env
 }

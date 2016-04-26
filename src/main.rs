@@ -21,7 +21,7 @@ fn main() {
         match io::stdin().read_line(&mut input) {
             Ok(0) => break,
             Ok(_) => {
-                let s = steps::step4_lambda::rep(&input, &mut repl_env);
+                let s = steps::step3_env::rep(&input, &mut repl_env);
                 println!("{}", s);
             }
             Err(error) => println!("{}", error),

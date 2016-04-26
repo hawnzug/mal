@@ -87,7 +87,7 @@ fn apply(func: MalType, para: Vec<MalType>) -> MalType {
     match func {
         MalType::Func(f) => f(para),
         MalType::MalFunc(formals, body, env) => {
-            let newenv = env.extend(*formals, para);
+            let newenv = env.multibind(*formals, para);
             match newenv {
                 Ok(mut newnew) => eval(*body, &mut newnew),
                 Err(err) => err,
