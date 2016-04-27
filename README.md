@@ -12,3 +12,4 @@ of learning Rust, or maybe understanding Lisp better.
 - [x] lambda
 - [x] Tail Call Optimization
 - [ ] Macro
+- [ ] Rewrite Parser

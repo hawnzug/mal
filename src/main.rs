@@ -11,10 +11,11 @@ pub mod core;
 use std::io;
 use std::io::prelude::*;
 use core::init_env;
+use env::Env;
 
 fn main() {
     let mut input = String::new();
-    let mut repl_env = init_env();
+    let mut repl_env = Env::new();
     let mut global = init_env();
     loop {
         print!("λ> ");
